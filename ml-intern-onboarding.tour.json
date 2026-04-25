@@ -1,0 +1,307 @@
+{
+  "id": "ml-intern-onboarding",
+  "title": "ML Intern Codebase Tour",
+  "description": "Guided walkthrough of ML Intern — an autonomous ML research agent built on the Hugging Face ecosystem with a CLI, FastAPI backend, and React frontend.",
+  "version": "1.0.0",
+  "audience": "New Developers",
+  "prerequisites": [
+    "Familiarity with Python async, FastAPI, and React/TypeScript",
+    "Basic understanding of LLM agents and tool calling"
+  ],
+  "steps": [
+    {
+      "id": "step-1-overview",
+      "title": "Project Overview",
+      "description": "ML Intern is an autonomous agent that researches, writes, and ships ML code using the Hugging Face ecosystem. The repo splits into three top-level pillars: the agent itself (the agentic loop and its tools), a FastAPI backend that exposes the agent over HTTP, and a React chat UI. Start here, then we'll zoom into each pillar.",
+      "estimatedTime": 60,
+      "focusDirectory": "",
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "step-2-entry-points",
+      "title": "Entry Points & Configuration",
+      "description": "Three things bootstrap the system: the agent's CLI entry point, the FastAPI app entry point, and the main agent config that selects the model and registers MCP servers. The Python project file wires the CLI command and pins dependencies, and the Dockerfile packages it all for deployment.",
+      "estimatedTime": 90,
+      "focusDirectory": "",
+      "highlightLayers": [
+        {
+          "id": "entry-points",
+          "name": "Entry Points & Config",
+          "color": "#3b82f6",
+          "items": [
+            { "path": "agent/main.py", "type": "file" },
+            { "path": "backend/main.py", "type": "file" },
+            { "path": "configs/main_agent_config.json", "type": "file" },
+            { "path": "pyproject.toml", "type": "file" },
+            { "path": "Dockerfile", "type": "file" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "step-3-agent-core",
+      "title": "Agent Core — The Agentic Loop",
+      "description": "The heart of the system lives in the agent core. The agent loop runs the submission and iteration loops, capped at 300 turns. The session module owns a single agent run, and the doom-loop detector watches for repeated tool patterns and injects corrective prompts when the model gets stuck. The built-in tool registry, the Hugging Face router catalog, and the model switcher form the routing layer that decides which model and tool runs when.",
+      "estimatedTime": 180,
+      "focusDirectory": "agent/core",
+      "highlightLayers": [
+        {
+          "id": "core-loop",
+          "name": "Loop & Session",
+          "color": "#ef4444",
+          "items": [
+            { "path": "agent/core/agent_loop.py", "type": "file" },
+            { "path": "agent/core/session.py", "type": "file" },
+            { "path": "agent/core/doom_loop.py", "type": "file" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "core-infra",
+          "name": "Tools & Routing",
+          "color": "#10b981",
+          "items": [
+            { "path": "agent/core/tools.py", "type": "file" },
+            { "path": "agent/core/hf_router_catalog.py", "type": "file" },
+            { "path": "agent/core/model_switcher.py", "type": "file" },
+            { "path": "agent/core/llm_params.py", "type": "file" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "step-4-tools",
+      "title": "Tool Catalog",
+      "description": "The tools directory is the agent's hands. The Hugging Face group covers repos, datasets, papers, jobs, private repos, and docs. The GitHub group handles code search across public repositories. The execution and reasoning group runs code in a remote sandbox or locally, and supports higher-level planning and research workflows. To add a tool, register it in the built-in tool registry from the previous step.",
+      "estimatedTime": 150,
+      "focusDirectory": "agent/tools",
+      "highlightLayers": [
+        {
+          "id": "hf-tools",
+          "name": "Hugging Face",
+          "color": "#f59e0b",
+          "items": [
+            { "path": "agent/tools/hf_repo_files_tool.py", "type": "file" },
+            { "path": "agent/tools/hf_repo_git_tool.py", "type": "file" },
+            { "path": "agent/tools/dataset_tools.py", "type": "file" },
+            { "path": "agent/tools/papers_tool.py", "type": "file" },
+            { "path": "agent/tools/jobs_tool.py", "type": "file" },
+            { "path": "agent/tools/private_hf_repo_tools.py", "type": "file" },
+            { "path": "agent/tools/docs_tools.py", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "github-tools",
+          "name": "GitHub",
+          "color": "#8b5cf6",
+          "items": [
+            { "path": "agent/tools/github_find_examples.py", "type": "file" },
+            { "path": "agent/tools/github_list_repos.py", "type": "file" },
+            { "path": "agent/tools/github_read_file.py", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "exec-tools",
+          "name": "Execution & Reasoning",
+          "color": "#06b6d4",
+          "items": [
+            { "path": "agent/tools/sandbox_tool.py", "type": "file" },
+            { "path": "agent/tools/sandbox_client.py", "type": "file" },
+            { "path": "agent/tools/local_tools.py", "type": "file" },
+            { "path": "agent/tools/plan_tool.py", "type": "file" },
+            { "path": "agent/tools/research_tool.py", "type": "file" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "step-5-context-prompts",
+      "title": "Context & Prompts",
+      "description": "The context manager holds message history, auto-compacts at 170k tokens, and uploads sessions to Hugging Face for later analysis. The prompts directory holds the versioned system prompts (v1 through v3) — edit these to change agent behavior at the prompt level rather than the code level.",
+      "estimatedTime": 90,
+      "focusDirectory": "agent",
+      "highlightLayers": [
+        {
+          "id": "context-mgmt",
+          "name": "Context Manager",
+          "color": "#ec4899",
+          "items": [
+            { "path": "agent/context_manager", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "prompts",
+          "name": "System Prompts",
+          "color": "#f97316",
+          "items": [
+            { "path": "agent/prompts", "type": "directory" }
+          ],
+          "opacity": 0.7,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "step-6-backend",
+      "title": "FastAPI Backend",
+      "description": "The backend wraps the agent in an HTTP service. The app entry boots FastAPI, the agent route streams agent events to the client, and the auth route handles login. At runtime, the session manager tracks live agent sessions, the quota module enforces per-user limits, and a scheduler runs periodic KPI rollups in the background.",
+      "estimatedTime": 120,
+      "focusDirectory": "backend",
+      "highlightLayers": [
+        {
+          "id": "backend-app",
+          "name": "App & Routes",
+          "color": "#3b82f6",
+          "items": [
+            { "path": "backend/main.py", "type": "file" },
+            { "path": "backend/routes", "type": "directory" },
+            { "path": "backend/dependencies.py", "type": "file" },
+            { "path": "backend/models.py", "type": "file" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "backend-runtime",
+          "name": "Sessions, Quotas & KPIs",
+          "color": "#10b981",
+          "items": [
+            { "path": "backend/session_manager.py", "type": "file" },
+            { "path": "backend/user_quotas.py", "type": "file" },
+            { "path": "backend/kpis_scheduler.py", "type": "file" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "step-7-frontend",
+      "title": "React Frontend",
+      "description": "The frontend is a Vite, React, and TypeScript chat UI. The root component and main entry sit alongside the Layout module that frames the app shell. The feature components — Chat, Code Panel, Session Sidebar, and Welcome Screen — make up the user-facing screens. Shared hooks, the global store, and the utility library hold the cross-cutting state and helpers.",
+      "estimatedTime": 120,
+      "focusDirectory": "frontend/src",
+      "highlightLayers": [
+        {
+          "id": "frontend-entry",
+          "name": "Entry & Layout",
+          "color": "#8b5cf6",
+          "items": [
+            { "path": "frontend/src/App.tsx", "type": "file" },
+            { "path": "frontend/src/main.tsx", "type": "file" },
+            { "path": "frontend/src/components/Layout", "type": "directory" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "frontend-features",
+          "name": "Feature Components",
+          "color": "#06b6d4",
+          "items": [
+            { "path": "frontend/src/components/Chat", "type": "directory" },
+            { "path": "frontend/src/components/CodePanel", "type": "directory" },
+            { "path": "frontend/src/components/SessionSidebar", "type": "directory" },
+            { "path": "frontend/src/components/WelcomeScreen", "type": "directory" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "frontend-state",
+          "name": "State & Utilities",
+          "color": "#f59e0b",
+          "items": [
+            { "path": "frontend/src/hooks", "type": "directory" },
+            { "path": "frontend/src/store", "type": "directory" },
+            { "path": "frontend/src/lib", "type": "directory" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "step-8-scripts-tests-ci",
+      "title": "Scripts, Tests & CI",
+      "description": "The build scripts produce KPI rollups and supervised fine-tuning training data from session logs, and the SFT helpers tag those sessions for downstream use. The tests directory holds pytest-based unit tests, and the GitHub workflows run continuous integration — including the automatic Claude Code review whose tunable behavior is documented in the review guide highlighted here.",
+      "estimatedTime": 90,
+      "focusDirectory": "",
+      "highlightLayers": [
+        {
+          "id": "scripts",
+          "name": "Build Scripts",
+          "color": "#ef4444",
+          "items": [
+            { "path": "scripts", "type": "directory" },
+            { "path": "agent/sft", "type": "directory" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        },
+        {
+          "id": "tests-ci",
+          "name": "Tests & CI",
+          "color": "#10b981",
+          "items": [
+            { "path": "tests", "type": "directory" },
+            { "path": ".github/workflows", "type": "directory" },
+            { "path": "REVIEW.md", "type": "file" }
+          ],
+          "opacity": 0.75,
+          "renderStrategy": "border"
+        }
+      ],
+      "colorMode": "fileTypes"
+    },
+    {
+      "id": "step-9-next-steps",
+      "title": "Next Steps",
+      "description": "You've now seen the whole codebase. To extend the agent, register a new built-in tool in the core tool registry, add an MCP server in the main agent config, or tweak behavior by editing the latest system prompt. The README walks through setup, and the review guide explains the automated review pipeline.",
+      "estimatedTime": 60,
+      "focusDirectory": "",
+      "colorMode": "fileTypes",
+      "resources": [
+        {
+          "title": "README",
+          "url": "README.md",
+          "type": "documentation"
+        },
+        {
+          "title": "Review pipeline",
+          "url": "REVIEW.md",
+          "type": "documentation"
+        }
+      ]
+    }
+  ],
+  "metadata": {
+    "author": "Michael Flannery",
+    "createdAt": "2026-04-25T00:00:00.000Z",
+    "tags": [
+      "onboarding",
+      "ml-intern",
+      "agent",
+      "huggingface"
+    ]
+  }
+}
